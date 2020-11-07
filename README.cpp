@@ -111,16 +111,6 @@ private:
 		}
 	}
 };
-struct Node {
-	int data;
-	Node * next;
-};
-
-void push(Node** head_ref, int value) {
-	Node * newNode = new Node();
-	newNode->data = value;
-	newNode->next = *head_ref;
-}
 int main()
 {
 	B_Tree tree;
