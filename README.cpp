@@ -1,88 +1,129 @@
 # Balebom_Olala
-Construct Suffix Array of a Long String
-// Week4Problem2.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// B-Tree.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
 #include "pch.h"
-#include <algorithm>
 #include <iostream>
-#include <string>
 #include <vector>
-#include <utility>
-#include <map>
-using std::cin;
-using std::cout;
-using std::endl;
-using std::make_pair;
-using std::pair;
-using std::string;
-using std::vector;
-using std::map;
-// Build suffix array of the string text and
-// return a vector result of the same length as the text
-// such that the value result[i] is the index (0-based)
-// in text where the i-th lexicographically smallest
-// suffix of text starts.
-void countingSortDoubled(string text, vector<int> &order, vector<int> &classes)
+class B_Tree {
+	class Node {
+	public:
+		std::vector<int> data_;
+		std::vector<Node*> nextNode_;
+		Node* parent;
+		Node() {
+			parent = NULL;
+		}
+	};
+
+public:
+	B_Tree() {
+		read_data();
+	}
+
+	void get_tree() {
+
+	}
+
+private:
+	void split_node(Node* &root, Node* &parent, bool isleaf) {
+		Node * neighbour = new Node();
+		// set data
+		neighbour->data_.push_back(root->data_[2]);
+		parent->data_.push_back(root->data_[1]);
+		root->data_.pop_back();
+		root->data_.pop_back();
+		//
+		if (isleaf == false) {
+			neighbour->nextNode_.push_back(root->nextNode_[2]);
+			neighbour->nextNode_.push_back(root->nextNode_[3]);
+			root->nextNode_.pop_back();
+			root->nextNode_.pop_back();
+		}
+		// set parent
+		parent->nextNode_.push_back(neighbour);
+		neighbour->parent = parent;
+		
+	}
+
+	void update_tree(Node* &root, int value) {
+		// split root node
+		if (root->data_.size() == 3 && root->parent == NULL) {
+			Node * newParent = new Node();
+			root->parent = newParent;
+			newParent->nextNode_.push_back(root);
+			bool isleaf = true;
+			if (root->nextNode_.size() > 0)
+				isleaf = false;
+			split_node(root, newParent, isleaf);
+			root = newParent;
+			update_tree(root, value);
+			return;
+		}
+		// split none root node
+		else if (root->data_.size() == 3 && root->parent != NULL) {
+			Node * parent = root->parent;
+			int location;
+			for (int i = 0; i < parent->nextNode_.size(); i++) {
+				if (parent->nextNode_[i]->data_.size() == 3) {
+					location = i;
+					break;
+				}
+			}
+			split_node(root, parent, 1);
+			root = parent->nextNode_[location];
+			update_tree(parent, value);
+			
+			return;
+		}
+		// DFS
+		else if (root->nextNode_.size() != 0) {
+			for (int i = 0; i < root->data_.size(); i++) {
+				if (root->data_[i] > value) {
+					update_tree(root->nextNode_[i], value);
+					return;
+				}
+				else if (i == root->data_.size() - 1) {
+					update_tree(root->nextNode_[i + 1], value);
+					return;
+				}
+			}
+		}
+		// add value to the leaf
+		else {
+			for (int i = 0; i < root->data_.size(); i++) {
+				if (root->data_[i] > value) {
+					root->data_.insert(root->data_.begin() + i, value);
+					return;
+				}
+			}
+			root->data_.push_back(value);
+			return;
+		}
+	}
+
+	void read_data() {
+		int n, value;
+		std::cin >> n;
+		Node * root = new Node;
+		for (int i = 0; i < n; i++) {
+			std::cin >> value;
+			update_tree(root, value);
+		}
+	}
+};
+struct Node {
+	int data;
+	Node * next;
+};
+
+void push(Node** head_ref, int value) {
+	Node * newNode = new Node();
+	newNode->data = value;
+	newNode->next = *head_ref;
+}
+int main()
 {
-	int numA = 0, numC = 0, numG = 0, numT = 0, numD = 0;
-	for (int i = 0; i < text.size() - 1; i++) {
-		if (text[i] == 'A')	numA++;
-		else if (text[i] == 'C') numC++;
-		else if (text[i] == 'G') numG++;
-		else if (text[i] == 'T') numT++;
-		else if (text[i] == '$') numD++;
-	}
-	map<char, int> hashmap;
-	hashmap['$'] = 0;
-	hashmap['A'] = numD;
-	hashmap['C'] = hashmap['A'] + numA;
-	hashmap['G'] = hashmap['C'] + numC;
-	hashmap['T'] = hashmap['G'] + numG;
-	for (int i = 0; i < text.size(); i++) {
-		if (text[i] == 'A') {
-			order[hashmap['A']] = i;
-			hashmap['A']++;
-		}
-		else if (text[i] == 'C') {
-			order[hashmap['C']] = i;
-			hashmap['C']++;
-		}
-		else if (text[i] == 'G') {
-			order[hashmap['G']] = i;
-			hashmap['G']++;
-		}
-		else if (text[i] == 'T') {
-			order[hashmap['T']] = i;
-			hashmap['T']++;
-		}
-		else if (text[i] == '$') {
-			order[hashmap['$']] = i;
-			hashmap['$']++;
-		}
-	}
-	for (int i = 0; i < text.size(); i++) {
-		if(text[])
-	}
-	
-}
-
-vector<int> BuildSuffixArray(const string& text) {
-	vector<int> result;
-	// Implement this function yourself
-	vector<int> order(text.size());
-	vector<int> classes(text.size());
-
-	return result;
-}
-
-int main() {
-	string text;
-	cin >> text;
-	vector<int> suffix_array = BuildSuffixArray(text);
-	for (int i = 0; i < suffix_array.size(); ++i) {
-		cout << suffix_array[i] << ' ';
-	}
-	cout << endl;
-	return 0;
+	B_Tree tree;
 }
 
 
